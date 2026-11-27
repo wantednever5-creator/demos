@@ -3,6 +3,7 @@ import Navbar from "@/components/prem-bandhan/Navbar";
 import Hero from "@/components/prem-bandhan/Hero";
 import Spaces from "@/components/prem-bandhan/Spaces";
 import Gallery from "@/components/prem-bandhan/Gallery";
+import BanquetUtilitySuite from "@/components/shared/BanquetUtilitySuite";
 import AvailabilityForm from "@/components/prem-bandhan/AvailabilityForm";
 import EventsAndReviews from "@/components/prem-bandhan/EventsAndReviews";
 import Footer from "@/components/prem-bandhan/Footer";
@@ -17,6 +18,17 @@ export default function PremBandhanPage() {
         <Hero />
         <Spaces />
         <Gallery />
+        <BanquetUtilitySuite
+          venue={{
+            id: "prem-bandhan",
+            name: PREM_VENUE.name,
+            shortAddress: PREM_VENUE.shortAddress,
+            phoneDisplay: PREM_VENUE.phoneDisplay,
+            telHref: PREM_VENUE.telHref,
+            whatsappNumber: PREM_VENUE.whatsappNumber,
+            theme: "burgundy",
+          }}
+        />
         <AvailabilityForm />
         <EventsAndReviews />
       </main>
@@ -32,11 +44,11 @@ export default function PremBandhanPage() {
           Call Venue
         </a>
         <a
-          href="#availability"
+          href="#planner"
           className="py-2.5 rounded-full bg-[#5E1928] text-white text-xs font-semibold flex items-center justify-center gap-1.5"
         >
           <MessageCircle className="w-3.5 h-3.5" />
-          Check Date
+          Plan Event
         </a>
       </div>
     </div>

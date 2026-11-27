@@ -1,43 +1,63 @@
 // src/app/page.tsx
 import type { Metadata } from "next";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import Navbar from "@/components/vatika/Navbar";
+import HeroShowroom from "@/components/vatika/HeroShowroom";
+import SpacesShowcase from "@/components/vatika/SpacesShowcase";
+import GalleryStrip from "@/components/vatika/GalleryStrip";
+import BanquetUtilitySuite from "@/components/shared/BanquetUtilitySuite";
+import AvailabilityChecker from "@/components/vatika/AvailabilityChecker";
+import CorporateAndReviews from "@/components/vatika/CorporateAndReviews";
+import Footer from "@/components/vatika/Footer";
+import { Phone, MessageCircle } from "lucide-react";
+import { VENUE } from "@/lib/venueData";
 
 export const metadata: Metadata = {
-  title: "Client Preview Portal | Tapecut Studios",
-  description: "Private interactive website previews crafted by Tapecut Studios.",
+  title: "Vatika Banquet & Lawns | Premier Wedding & Event Venue in Haldwani",
+  description:
+    "Grand outdoor lawns, air-conditioned banquet hall, catering planner, site-visit booking, and direct zero-commission reservations on Bareilly–Nainital Road, Kathgodam, Haldwani. Rated 4.7★.",
 };
 
-export default function PreviewPortalPage() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#FAF8F5] text-[#1F1C18] flex items-center justify-center p-6">
-      <div className="max-w-md w-full rounded-3xl bg-white border border-stone-200/80 p-8 sm:p-10 text-center space-y-6 shadow-[0_24px_60px_-20px_rgba(31,28,24,0.08)]">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#EDF5F0] text-[#1C3B2E] text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          Tapecut Studios
-        </div>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1F1C18]">
+      <Navbar />
+      <main>
+        <HeroShowroom />
+        <SpacesShowcase />
+        <GalleryStrip />
+        <BanquetUtilitySuite
+          venue={{
+            id: "vatika",
+            name: VENUE.name,
+            shortAddress: VENUE.shortAddress,
+            phoneDisplay: VENUE.phoneDisplay,
+            telHref: VENUE.telHref,
+            whatsappNumber: VENUE.whatsappNumber,
+            theme: "emerald",
+          }}
+        />
+        <AvailabilityChecker />
+        <CorporateAndReviews />
+      </main>
+      <Footer />
 
-        <div className="space-y-2">
-          <h1 className="font-serif text-3xl sm:text-4xl font-medium text-[#1F1C18]">
-            Client Preview Portal
-          </h1>
-          <p className="text-sm text-stone-600 leading-relaxed">
-            Open the direct preview link shared with you on WhatsApp to view
-            your custom website prototype.
-          </p>
-        </div>
-
-        <div className="pt-2">
-          <a
-            href="https://tapecut.info"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#1C3B2E] hover:bg-[#152E24] text-white text-xs font-semibold tracking-wide transition-colors"
-          >
-            Visit tapecut.info
-            <ArrowUpRight className="w-4 h-4" />
-          </a>
-        </div>
+      {/* Mobile Sticky Action Bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 py-3 grid grid-cols-2 gap-3 shadow-[0_-8px_30px_rgba(31,28,24,0.08)]">
+        <a
+          href={VENUE.telHref}
+          className="py-2.5 rounded-full border border-stone-300 text-[#1F1C18] text-xs font-semibold flex items-center justify-center gap-1.5"
+        >
+          <Phone className="w-3.5 h-3.5 text-[#1C3B2E]" />
+          Call Venue
+        </a>
+        <a
+          href="#planner"
+          className="py-2.5 rounded-full bg-[#1C3B2E] text-white text-xs font-semibold flex items-center justify-center gap-1.5"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          Plan Event
+        </a>
       </div>
-    </main>
+    </div>
   );
 }
