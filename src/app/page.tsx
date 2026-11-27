@@ -28,7 +28,7 @@ export default function PreviewPortalPage() {
 
         <div className="pt-2">
           <a
-            href="https://tapcut.info"
+            href="https://tapecut.info"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#1C3B2E] hover:bg-[#152E24] text-white text-xs font-semibold tracking-wide transition-colors"
