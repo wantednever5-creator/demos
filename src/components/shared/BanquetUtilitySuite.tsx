@@ -12,24 +12,27 @@ import {
   ChefHat,
   Clock,
   Eye,
+  EyeOff,
   LayoutDashboard,
+  Lock,
   MessageCircle,
   Music,
   Phone,
   PhoneCall,
+  ShieldAlert,
   Sparkles,
   Users,
   UtensilsCrossed,
 } from "lucide-react";
 
 export interface UtilityVenueProps {
-  id: "vatika" | "prem-bandhan";
+  id: string;
   name: string;
   shortAddress: string;
   phoneDisplay: string;
   telHref: string;
   whatsappNumber: string;
-  theme: "emerald" | "burgundy";
+  theme: "emerald" | "burgundy" | "sapphire";
 }
 
 type ActiveMode = "catering" | "appointment" | "owner";
@@ -95,7 +98,7 @@ const ADD_ON_SERVICES = [
 ] as const;
 
 const TIME_SLOTS = [
-  { label: "Morning Slot", time: "11:00 AM – 1:00 PM", note: "Daytime lawn view" },
+  { label: "Morning Slot", time: "11:00 AM – 1:00 PM", note: "Daytime venue tour" },
   { label: "Afternoon Slot", time: "2:30 PM – 5:00 PM", note: "Quiet walkthrough" },
   { label: "Evening Lighting Tour", time: "5:30 PM – 8:00 PM", note: "See night lights" },
 ] as const;
@@ -116,6 +119,7 @@ const THEME_TOKENS = {
     headingText: "text-[#1F1C18]",
     mutedText: "text-stone-600",
     inputBg: "bg-[#FAF8F5] border-stone-200 focus:border-[#1C3B2E]",
+    rangeAccent: "accent-[#1C3B2E]",
   },
   burgundy: {
     sectionBg: "bg-[#FDFBF7]",
@@ -132,11 +136,32 @@ const THEME_TOKENS = {
     headingText: "text-[#23191B]",
     mutedText: "text-[#635357]",
     inputBg: "bg-[#FDFBF7] border-[#E6DCD1] focus:border-[#5E1928]",
+    rangeAccent: "accent-[#5E1928]",
+  },
+  sapphire: {
+    sectionBg: "bg-[#FAF9F6]",
+    cardBorder: "border-[#E6E2D8]",
+    accentText: "text-[#AE8952]",
+    primaryBg: "bg-[#162B47]",
+    primaryHover: "hover:bg-[#0F1F35]",
+    primaryText: "text-[#162B47]",
+    primaryBorder: "border-[#162B47]",
+    softTintBg: "bg-[#EEF3F9]",
+    softTintBorder: "border-[#162B47]/20",
+    warmTintBg: "bg-[#F7F1E4]",
+    warmBorder: "border-[#AE8952]",
+    headingText: "text-[#17202D]",
+    mutedText: "text-[#525E6E]",
+    inputBg: "bg-[#FAF9F6] border-[#E0DCD2] focus:border-[#162B47]",
+    rangeAccent: "accent-[#162B47]",
   },
 } as const;
 
-function getUpcomingDates(count = 10): { iso: string; day: string; dateNum: string; month: string }[] {
-  const result: { iso: string; day: string; dateNum: string; month: string }[] = [];
+function getUpcomingDates(
+  count = 10
+): { iso: string; day: string; dateNum: string; month: string }[] {
+  const result: { iso: string; day: string; dateNum: string; month: string }[] =
+    [];
   const base = new Date();
   for (let i = 1; i <= count; i++) {
     const d = new Date(base);
@@ -184,9 +209,16 @@ export default function BanquetUtilitySuite({
         eventDate: upcomingDates[1]?.iso || "2026-12-08",
         guests: 650,
         menuTier: "Royal Multi-Cuisine Veg",
-        counters: ["Live Chaat & Golgappa Counter", "Live Tandoor & Stuffed Naan", "Live Jalebi / Rabri / Mithai"],
+        counters: [
+          "Live Chaat & Golgappa Counter",
+          "Live Tandoor & Stuffed Naan",
+          "Live Jalebi / Rabri / Mithai",
+        ],
         rooms: 8,
-        addOns: ["Floral Mandap & Varmala Stage", "DJ, Sound & Sangeet Lighting"],
+        addOns: [
+          "Floral Mandap & Varmala Stage",
+          "DJ, Sound & Sangeet Lighting",
+        ],
         status: "Visit Scheduled",
         createdAt: "2 hrs ago",
       },
@@ -198,7 +230,10 @@ export default function BanquetUtilitySuite({
         eventDate: upcomingDates[4]?.iso || "2026-12-14",
         guests: 300,
         menuTier: "Pure Veg Traditional",
-        counters: ["Mocktail & Welcome Drink Bar", "Live Chaat & Golgappa Counter"],
+        counters: [
+          "Mocktail & Welcome Drink Bar",
+          "Live Chaat & Golgappa Counter",
+        ],
         rooms: 4,
         addOns: ["Floral Mandap & Varmala Stage"],
         status: "New Inquiry",
@@ -242,14 +277,14 @@ export default function BanquetUtilitySuite({
     [upcomingDates[2]?.iso, upcomingDates[6]?.iso].filter(Boolean)
   );
 
-  // Hydrate demo state from localStorage so owner tests persist across refresh
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (!saved) return;
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed.leads)) setLeads(parsed.leads);
-      if (Array.isArray(parsed.appointments)) setAppointments(parsed.appointments);
+      if (Array.isArray(parsed.appointments))
+        setAppointments(parsed.appointments);
       if (Array.isArray(parsed.bookedDates)) setBookedDates(parsed.bookedDates);
     } catch {
       // ignore corrupted storage
@@ -271,7 +306,7 @@ export default function BanquetUtilitySuite({
         })
       );
     } catch {
-      // ignore storage quota errors
+      // ignore quota errors
     }
   };
 
@@ -323,7 +358,10 @@ export default function BanquetUtilitySuite({
     eventDate && bookedDates.includes(eventDate)
   );
 
-  const handleBuildRequirement = (e: React.FormEvent, openWhatsApp: boolean) => {
+  const handleBuildRequirement = (
+    e: React.FormEvent,
+    openWhatsApp: boolean
+  ) => {
     e.preventDefault();
     const cleanName = clientName.trim() || "Family Guest";
     const cleanPhone = clientPhone.trim() || "Shared on WhatsApp";
@@ -347,7 +385,7 @@ export default function BanquetUtilitySuite({
     setLeads(nextLeads);
     persistDemoState(nextLeads, appointments, bookedDates);
     setCateringSavedNotice(
-      `Saved as ${newLead.id} in Owner Panel! Switch to "Owner Dashboard Preview" to see how management receives this.`
+      `Saved privately as ${newLead.id} inside the Owner / Admin Panel (hidden from customers on the live site).`
     );
 
     if (openWhatsApp) {
@@ -362,7 +400,9 @@ export default function BanquetUtilitySuite({
         `• Guest Count: ~${guestCount} Guests`,
         `• Catering Style: ${menuTier}`,
         `• Live Food Counters: ${
-          selectedCounters.length ? selectedCounters.join(", ") : "Standard buffet"
+          selectedCounters.length
+            ? selectedCounters.join(", ")
+            : "Standard buffet"
         }`,
         `• AC Guest Rooms Needed: ${roomCount}`,
         `• Decor & Services: ${
@@ -460,22 +500,27 @@ export default function BanquetUtilitySuite({
             <div
               className={`text-xs uppercase tracking-[0.2em] font-semibold ${t.accentText}`}
             >
-              Smart Planning & Venue Management Suite
+              Smart Event Planner & Private Owner Suite
             </div>
             <h2
               className={`font-serif text-3xl sm:text-5xl font-medium ${t.headingText} leading-tight`}
             >
-              Custom Menu, Site Visits & Owner Control — All in One Place.
+              Custom Menu, Site Visits & Private Owner Control.
             </h2>
-            <p className={`text-sm sm:text-base ${t.mutedText} leading-relaxed`}>
-              Families can customize their catering menu or book a walkthrough
-              in seconds, while management receives organized requirements and
-              controls open wedding dates without messy notebooks.
+            <p
+              className={`text-sm sm:text-base ${t.mutedText} leading-relaxed`}
+            >
+              Customers use the first two tabs to build their food sheet or book
+              a venue visit. The third tab previews the{" "}
+              <strong className={t.headingText}>
+                Private Owner / Admin Dashboard
+              </strong>{" "}
+              (locked away from customers on your live website).
             </p>
           </div>
 
-          {/* 3-Mode Pill Switcher */}
-          <div className="inline-flex flex-wrap gap-2 p-1.5 rounded-full bg-white border border-stone-200/90 shadow-sm self-start lg:self-auto">
+          {/* 3-Mode Pill Switcher (With Explicit Admin Lock Badge) */}
+          <div className="inline-flex flex-wrap gap-2 p-1.5 rounded-3xl sm:rounded-full bg-white border border-stone-200/90 shadow-sm self-start lg:self-auto">
             <button
               type="button"
               onClick={() => setActiveMode("catering")}
@@ -505,19 +550,19 @@ export default function BanquetUtilitySuite({
             <button
               type="button"
               onClick={() => setActiveMode("owner")}
-              className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer border ${
                 activeMode === "owner"
-                  ? `${t.primaryBg} text-white shadow-sm`
-                  : "text-stone-600 hover:text-stone-900"
+                  ? "bg-amber-950 text-amber-100 border-amber-800 shadow-sm"
+                  : "bg-amber-50/90 text-amber-950 border-amber-300/80 hover:bg-amber-100"
               }`}
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              Owner Panel
+              <Lock className="w-3.5 h-3.5 text-amber-500" />
+              Owner / Admin Only
               <span
-                className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] ${
+                className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                   activeMode === "owner"
-                    ? "bg-white/20 text-white"
-                    : `${t.softTintBg} ${t.primaryText}`
+                    ? "bg-amber-500/25 text-amber-200"
+                    : "bg-amber-200/80 text-amber-950"
                 }`}
               >
                 {leads.length + appointments.length}
@@ -527,7 +572,7 @@ export default function BanquetUtilitySuite({
         </div>
 
         {/* ================================================================ */}
-        {/* TAB 1: CATERING, FOOD COUNTERS & EVENT REQUIREMENT BUILDER       */}
+        {/* TAB 1: PUBLIC CUSTOMER VIEW — CATERING & EVENT BUILDER           */}
         {/* ================================================================ */}
         {activeMode === "catering" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -537,19 +582,22 @@ export default function BanquetUtilitySuite({
             >
               <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-stone-100">
                 <div>
-                  <h3 className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}>
+                  <h3
+                    className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}
+                  >
                     Customize Catering, Rooms & Decor
                   </h3>
                   <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                    Build your exact wedding requirement sheet before speaking with management
+                    Customer View — families submit their exact food & guest requirements in 30 seconds
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full ${t.softTintBg} ${t.primaryText} text-xs font-semibold inline-flex items-center gap-1.5`}>
-                  <ChefHat className="w-3.5 h-3.5" /> Catering Ready
+                <span
+                  className={`px-3 py-1 rounded-full ${t.softTintBg} ${t.primaryText} text-xs font-semibold inline-flex items-center gap-1.5`}
+                >
+                  <ChefHat className="w-3.5 h-3.5" /> Public Customer Tool
                 </span>
               </div>
 
-              {/* Guest Contact & Event Date */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-stone-600 mb-1.5">
@@ -594,16 +642,13 @@ export default function BanquetUtilitySuite({
               </div>
 
               {isSelectedEventDateBooked && (
-                <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900 flex items-center justify-between gap-3">
-                  <span>
-                    <strong>Note:</strong> {formatReadableDate(eventDate)} is currently
-                    marked <strong>Booked</strong> on the venue calendar. You can
-                    still inquire for daytime slots or pick a nearby date.
-                  </span>
+                <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900">
+                  <strong>Date Alert:</strong> {formatReadableDate(eventDate)} is
+                  currently marked <strong>Booked</strong> by venue management.
+                  You can still inquire for daytime slots or pick a nearby date.
                 </div>
               )}
 
-              {/* Guest Count Slider + AC Rooms Counter */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] border border-stone-200/70">
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -611,7 +656,9 @@ export default function BanquetUtilitySuite({
                       <Users className={`w-4 h-4 ${t.primaryText}`} />
                       Expected Guests
                     </span>
-                    <span className={`font-serif text-2xl font-semibold ${t.headingText}`}>
+                    <span
+                      className={`font-serif text-2xl font-semibold ${t.headingText}`}
+                    >
                       {guestCount}
                     </span>
                   </div>
@@ -622,7 +669,7 @@ export default function BanquetUtilitySuite({
                     step={50}
                     value={guestCount}
                     onChange={(e) => setGuestCount(Number(e.target.value))}
-                    className="w-full accent-[#1C3B2E] cursor-pointer"
+                    className={`w-full ${t.rangeAccent} cursor-pointer`}
                   />
                   <div className="flex justify-between text-[11px] text-stone-400">
                     <span>100</span>
@@ -637,7 +684,9 @@ export default function BanquetUtilitySuite({
                       <BedDouble className={`w-4 h-4 ${t.primaryText}`} />
                       AC Family Rooms Needed
                     </span>
-                    <span className={`font-serif text-2xl font-semibold ${t.headingText}`}>
+                    <span
+                      className={`font-serif text-2xl font-semibold ${t.headingText}`}
+                    >
                       {roomCount} Rooms
                     </span>
                   </div>
@@ -648,7 +697,7 @@ export default function BanquetUtilitySuite({
                     step={1}
                     value={roomCount}
                     onChange={(e) => setRoomCount(Number(e.target.value))}
-                    className="w-full accent-[#1C3B2E] cursor-pointer"
+                    className={`w-full ${t.rangeAccent} cursor-pointer`}
                   />
                   <div className="flex justify-between text-[11px] text-stone-400">
                     <span>None</span>
@@ -658,7 +707,6 @@ export default function BanquetUtilitySuite({
                 </div>
               </div>
 
-              {/* Catering & Food Tier */}
               <div className="space-y-2.5">
                 <label className="block text-xs font-semibold text-stone-600">
                   Catering & Food Preference
@@ -677,7 +725,11 @@ export default function BanquetUtilitySuite({
                             : "bg-white border-stone-200 hover:border-stone-400"
                         }`}
                       >
-                        <div className={`text-xs font-bold ${active ? t.primaryText : t.headingText}`}>
+                        <div
+                          className={`text-xs font-bold ${
+                            active ? t.primaryText : t.headingText
+                          }`}
+                        >
                           {tier.label}
                         </div>
                         <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">
@@ -689,7 +741,6 @@ export default function BanquetUtilitySuite({
                 </div>
               </div>
 
-              {/* Live Food Counters */}
               <div className="space-y-2.5">
                 <label className="block text-xs font-semibold text-stone-600">
                   Live Food Counters & Add-On Stalls
@@ -702,7 +753,11 @@ export default function BanquetUtilitySuite({
                         key={counter}
                         type="button"
                         onClick={() =>
-                          toggleItem(selectedCounters, counter, setSelectedCounters)
+                          toggleItem(
+                            selectedCounters,
+                            counter,
+                            setSelectedCounters
+                          )
                         }
                         className={`px-3.5 py-2 rounded-full text-xs font-medium border inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                           active
@@ -718,7 +773,6 @@ export default function BanquetUtilitySuite({
                 </div>
               </div>
 
-              {/* Decor, DJ & Logistics */}
               <div className="space-y-2.5">
                 <label className="block text-xs font-semibold text-stone-600 inline-flex items-center gap-1.5">
                   <Music className="w-3.5 h-3.5 text-stone-400" />
@@ -741,7 +795,11 @@ export default function BanquetUtilitySuite({
                         }`}
                       >
                         <span>{service}</span>
-                        {active && <CheckCircle2 className={`w-4 h-4 ${t.primaryText}`} />}
+                        {active && (
+                          <CheckCircle2
+                            className={`w-4 h-4 ${t.primaryText}`}
+                          />
+                        )}
                       </button>
                     );
                   })}
@@ -749,8 +807,11 @@ export default function BanquetUtilitySuite({
               </div>
 
               {cateringSavedNotice && (
-                <div className={`rounded-2xl ${t.softTintBg} border ${t.softTintBorder} px-4 py-3 text-xs ${t.primaryText} flex flex-wrap items-center justify-between gap-2`}>
-                  <span>{cateringSavedNotice}</span>
+                <div className="rounded-2xl bg-amber-50 border border-amber-300 px-4 py-3 text-xs text-amber-950 flex flex-wrap items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                    {cateringSavedNotice}
+                  </span>
                   <button
                     type="button"
                     onClick={() => setActiveMode("owner")}
@@ -761,7 +822,6 @@ export default function BanquetUtilitySuite({
                 </div>
               )}
 
-              {/* Dual Submit Actions */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   type="submit"
@@ -776,19 +836,25 @@ export default function BanquetUtilitySuite({
                   className={`py-3.5 px-5 rounded-full border border-stone-300 hover:border-stone-500 ${t.headingText} text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors`}
                 >
                   <Eye className="w-4 h-4" />
-                  Save to Owner Panel Demo
+                  Test in Admin Panel
                 </button>
               </div>
             </form>
 
-            {/* Live Requirement Sheet Preview (Right Column) */}
+            {/* Right Summary Column */}
             <div className="lg:col-span-4 space-y-5">
-              <div className={`rounded-3xl bg-white border ${t.cardBorder} p-6 space-y-5 shadow-sm`}>
+              <div
+                className={`rounded-3xl bg-white border ${t.cardBorder} p-6 space-y-5 shadow-sm`}
+              >
                 <div className="flex items-center justify-between">
-                  <span className={`text-[11px] uppercase tracking-[0.18em] font-semibold ${t.accentText}`}>
+                  <span
+                    className={`text-[11px] uppercase tracking-[0.18em] font-semibold ${t.accentText}`}
+                  >
                     Live Event Brief
                   </span>
-                  <span className="text-[11px] text-stone-400">Auto-formatted</span>
+                  <span className="text-[11px] text-stone-400">
+                    Auto-formatted
+                  </span>
                 </div>
 
                 <div className="space-y-3 text-sm">
@@ -819,7 +885,9 @@ export default function BanquetUtilitySuite({
                   </div>
                   <div className="flex justify-between py-2 border-b border-stone-100">
                     <span className="text-stone-500">Menu Tier</span>
-                    <span className={`font-semibold text-right ${t.primaryText}`}>
+                    <span
+                      className={`font-semibold text-right ${t.primaryText}`}
+                    >
                       {menuTier}
                     </span>
                   </div>
@@ -844,30 +912,34 @@ export default function BanquetUtilitySuite({
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs text-stone-400">Standard Buffet</span>
+                        <span className="text-xs text-stone-400">
+                          Standard Buffet
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-3xl ${t.primaryBg} text-white p-6 space-y-3`}>
+              <div
+                className={`rounded-3xl ${t.primaryBg} text-white p-6 space-y-3`}
+              >
                 <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-[#F2D5AB] font-semibold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Why Venue Owners Love This
+                  <Lock className="w-3.5 h-3.5" />
+                  Private Owner Advantage
                 </div>
                 <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
-                  Instead of answering 30 vague calls asking “rate kya
-                  hai?”, management receives exact headcount, veg/non-veg
-                  menu choices, room count, and contact details upfront—ready
-                  to quote immediately.
+                  Every sheet filled here goes privately to your{" "}
+                  <strong className="text-white">Owner / Admin Panel</strong>{" "}
+                  and WhatsApp—never visible to other customers—so you quote
+                  serious families immediately without vague rate calls.
                 </p>
                 <button
                   type="button"
                   onClick={() => setActiveMode("owner")}
                   className="pt-1 text-xs font-semibold text-[#F4D5A3] hover:text-white inline-flex items-center gap-1 cursor-pointer"
                 >
-                  See Owner Dashboard Preview
+                  Preview Private Owner Panel
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -876,7 +948,7 @@ export default function BanquetUtilitySuite({
         )}
 
         {/* ================================================================ */}
-        {/* TAB 2: SITE VISIT & MANAGER CALLBACK APPOINTMENT SCHEDULER       */}
+        {/* TAB 2: PUBLIC CUSTOMER VIEW — APPOINTMENT / CALLBACK SCHEDULER   */}
         {/* ================================================================ */}
         {activeMode === "appointment" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -885,15 +957,16 @@ export default function BanquetUtilitySuite({
               className={`lg:col-span-7 rounded-3xl bg-white border ${t.cardBorder} p-6 sm:p-8 space-y-6 shadow-[0_24px_60px_-20px_rgba(31,28,24,0.08)]`}
             >
               <div className="space-y-1 pb-4 border-b border-stone-100">
-                <h3 className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}>
+                <h3
+                  className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}
+                >
                   Schedule a Venue Walkthrough or Callback
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-500">
-                  Lock in a dedicated time slot so the venue manager is ready for your family
+                  Customer View — reserve a dedicated slot so the venue manager is ready for your family
                 </p>
               </div>
 
-              {/* Site Visit vs Callback Toggle */}
               <div className="grid grid-cols-2 gap-3">
                 {(["Site Visit", "Manager Callback"] as const).map((kind) => {
                   const active = appKind === kind;
@@ -909,19 +982,31 @@ export default function BanquetUtilitySuite({
                       }`}
                     >
                       {kind === "Site Visit" ? (
-                        <CalendarCheck className={`w-5 h-5 ${active ? t.primaryText : "text-stone-400"}`} />
+                        <CalendarCheck
+                          className={`w-5 h-5 ${
+                            active ? t.primaryText : "text-stone-400"
+                          }`}
+                        />
                       ) : (
-                        <PhoneCall className={`w-5 h-5 ${active ? t.primaryText : "text-stone-400"}`} />
+                        <PhoneCall
+                          className={`w-5 h-5 ${
+                            active ? t.primaryText : "text-stone-400"
+                          }`}
+                        />
                       )}
                       <div>
-                        <div className={`text-xs sm:text-sm font-bold ${active ? t.primaryText : t.headingText}`}>
+                        <div
+                          className={`text-xs sm:text-sm font-bold ${
+                            active ? t.primaryText : t.headingText
+                          }`}
+                        >
                           {kind === "Site Visit"
                             ? "Physical Venue Visit"
                             : "Request Manager Call"}
                         </div>
                         <div className="text-[11px] text-stone-500">
                           {kind === "Site Visit"
-                            ? "Tour lawn, hall & rooms"
+                            ? "Tour hall, lawn & rooms"
                             : "10-min rate & date call"}
                         </div>
                       </div>
@@ -930,7 +1015,6 @@ export default function BanquetUtilitySuite({
                 })}
               </div>
 
-              {/* Name & Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-stone-600 mb-1.5">
@@ -960,7 +1044,6 @@ export default function BanquetUtilitySuite({
                 </div>
               </div>
 
-              {/* Date & Visitor Count */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-stone-600 mb-1.5">
@@ -995,7 +1078,6 @@ export default function BanquetUtilitySuite({
                 )}
               </div>
 
-              {/* Time Slot Cards */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-stone-600 inline-flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-stone-400" />
@@ -1017,10 +1099,18 @@ export default function BanquetUtilitySuite({
                         }`}
                       >
                         <div className="text-xs font-bold">{slot.label}</div>
-                        <div className={`text-[11px] mt-0.5 ${active ? "text-white/90" : "text-stone-600"}`}>
+                        <div
+                          className={`text-[11px] mt-0.5 ${
+                            active ? "text-white/90" : "text-stone-600"
+                          }`}
+                        >
                           {slot.time}
                         </div>
-                        <div className={`text-[10px] mt-1 ${active ? "text-[#F4D5A3]" : "text-stone-400"}`}>
+                        <div
+                          className={`text-[10px] mt-1 ${
+                            active ? "text-[#F4D5A3]" : "text-stone-400"
+                          }`}
+                        >
                           {slot.note}
                         </div>
                       </button>
@@ -1038,12 +1128,15 @@ export default function BanquetUtilitySuite({
               </button>
             </form>
 
-            {/* Right Column: Instant Confirmation Pass OR Info */}
             <div className="lg:col-span-5 space-y-5">
               {confirmedPass ? (
-                <div className={`rounded-3xl bg-white border-2 ${t.primaryBorder} p-6 sm:p-7 space-y-5 shadow-lg`}>
+                <div
+                  className={`rounded-3xl bg-white border-2 ${t.primaryBorder} p-6 sm:p-7 space-y-5 shadow-lg`}
+                >
                   <div className="flex items-center justify-between">
-                    <span className={`px-3 py-1 rounded-full ${t.softTintBg} ${t.primaryText} text-xs font-bold inline-flex items-center gap-1.5`}>
+                    <span
+                      className={`px-3 py-1 rounded-full ${t.softTintBg} ${t.primaryText} text-xs font-bold inline-flex items-center gap-1.5`}
+                    >
                       <CheckCircle2 className="w-4 h-4" /> Slot Reserved
                     </span>
                     <span className="text-xs font-mono font-semibold text-stone-400">
@@ -1052,30 +1145,42 @@ export default function BanquetUtilitySuite({
                   </div>
 
                   <div>
-                    <h4 className={`font-serif text-2xl font-semibold ${t.headingText}`}>
+                    <h4
+                      className={`font-serif text-2xl font-semibold ${t.headingText}`}
+                    >
                       {confirmedPass.kind} Pass
                     </h4>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      Added automatically to the Venue Owner Panel
+                      Logged privately inside the Owner / Admin Panel
                     </p>
                   </div>
 
                   <div className="space-y-2.5 text-sm bg-[#FAF8F5] rounded-2xl p-4 border border-stone-200/70">
                     <div className="flex justify-between">
                       <span className="text-stone-500">Guest</span>
-                      <span className={`font-semibold ${t.headingText}`}>{confirmedPass.name}</span>
+                      <span className={`font-semibold ${t.headingText}`}>
+                        {confirmedPass.name}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-500">Phone</span>
-                      <span className={`font-semibold ${t.headingText}`}>{confirmedPass.phone}</span>
+                      <span className={`font-semibold ${t.headingText}`}>
+                        {confirmedPass.phone}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-500">Date</span>
-                      <span className={`font-semibold ${t.headingText}`}>{formatReadableDate(confirmedPass.date)}</span>
+                      <span className={`font-semibold ${t.headingText}`}>
+                        {formatReadableDate(confirmedPass.date)}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-2">
                       <span className="text-stone-500">Slot</span>
-                      <span className={`font-semibold text-right ${t.primaryText}`}>{confirmedPass.slot}</span>
+                      <span
+                        className={`font-semibold text-right ${t.primaryText}`}
+                      >
+                        {confirmedPass.slot}
+                      </span>
                     </div>
                   </div>
 
@@ -1091,30 +1196,41 @@ export default function BanquetUtilitySuite({
                     <button
                       type="button"
                       onClick={() => setActiveMode("owner")}
-                      className="w-full py-3 rounded-full border border-stone-300 hover:border-stone-500 text-xs font-semibold text-stone-700 cursor-pointer transition-colors"
+                      className="w-full py-3 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-semibold text-amber-950 inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                     >
-                      View This Booking in Owner Panel →
+                      <Lock className="w-3.5 h-3.5 text-amber-700" />
+                      View Privately in Owner Panel →
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className={`rounded-3xl bg-white border ${t.cardBorder} p-6 sm:p-7 space-y-5 shadow-sm`}>
-                  <div className={`text-xs uppercase tracking-[0.18em] font-semibold ${t.accentText}`}>
+                <div
+                  className={`rounded-3xl bg-white border ${t.cardBorder} p-6 sm:p-7 space-y-5 shadow-sm`}
+                >
+                  <div
+                    className={`text-xs uppercase tracking-[0.18em] font-semibold ${t.accentText}`}
+                  >
                     Organized Appointments
                   </div>
-                  <h4 className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}>
+                  <h4
+                    className={`font-serif text-2xl sm:text-3xl font-medium ${t.headingText}`}
+                  >
                     Never Miss a Serious Family Visit.
                   </h4>
                   <p className="text-sm text-stone-600 leading-relaxed">
-                    Evening lighting tours convert more wedding bookings than
-                    plain daytime walk-ins. Families pick an exact slot, get a
-                    digital visit pass with {venue.name}'s address, and
-                    your staff knows who is arriving beforehand.
+                    Evening lighting tours close more wedding bookings than
+                    unannounced walk-ins. Families pick an exact slot, receive a
+                    digital visit pass, and management sees their schedule
+                    privately in the Owner Panel.
                   </p>
                   <div className="pt-3 border-t border-stone-100 text-xs text-stone-500 space-y-1.5">
-                    <div className="font-semibold text-stone-700">{venue.name}</div>
+                    <div className="font-semibold text-stone-700">
+                      {venue.name}
+                    </div>
                     <div>{venue.shortAddress}</div>
-                    <div className="font-semibold text-stone-800">{venue.phoneDisplay}</div>
+                    <div className="font-semibold text-stone-800">
+                      {venue.phoneDisplay}
+                    </div>
                   </div>
                 </div>
               )}
@@ -1123,67 +1239,113 @@ export default function BanquetUtilitySuite({
         )}
 
         {/* ================================================================ */}
-        {/* TAB 3: LIVE OWNER COMMAND PANEL (INTERACTIVE DEMO CLOSER)        */}
+        {/* TAB 3: STRICTLY OWNER / ADMIN ONLY — HIDDEN FROM CUSTOMERS       */}
         {/* ================================================================ */}
         {activeMode === "owner" && (
-          <div className="space-y-6">
-            {/* Demo Banner Explaining What the Owner Gets */}
-            <div className={`rounded-2xl ${t.primaryBg} text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
-              <div className="flex items-start sm:items-center gap-3">
-                <LayoutDashboard className="w-5 h-5 text-[#F4D5A3] shrink-0 mt-0.5 sm:mt-0" />
-                <div className="text-xs sm:text-sm">
-                  <strong className="text-white">Owner Management Preview:</strong>{" "}
-                  <span className="text-white/85">
-                    Every catering inquiry & site visit submitted on your website lands
-                    here automatically. Tap any date below to block/unblock availability live.
-                  </span>
+          <div className="rounded-3xl border-2 border-dashed border-amber-400/90 bg-amber-50/40 p-4 sm:p-6 space-y-6">
+            {/* Unmistakable Private Admin Callout Banner */}
+            <div className="rounded-2xl bg-[#1F1710] text-amber-50 px-5 py-5 border border-amber-500/40 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-md">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock className="w-5 h-5 text-amber-300" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-[#1F1710] text-[10px] font-extrabold uppercase tracking-wider">
+                      OWNER / ADMIN ONLY
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300">
+                      <EyeOff className="w-3.5 h-3.5" />
+                      Hidden From Customers on Live Website
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-amber-100/90 leading-relaxed max-w-3xl">
+                    <strong>Demo Notice:</strong> We unlocked this panel here so
+                    you can preview what management gets. On your live website,
+                    customers will <strong>never</strong> see this tab, customer
+                    phone numbers, food sheets, or date controls—it stays
+                    protected behind your private <strong>Owner Login / PIN</strong>.
+                  </p>
                 </div>
               </div>
-              <span className="shrink-0 px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold text-[#F4D5A3]">
-                Live Interactive Demo
+              <span className="self-start lg:self-center shrink-0 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/35 text-[11px] font-semibold text-amber-200 inline-flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Private Backend Preview
               </span>
             </div>
 
             {/* Owner Quick KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: "Active Inquiries", value: String(leads.length), sub: "With menu & headcount" },
-                { label: "Scheduled Visits / Calls", value: String(appointments.length), sub: "Upcoming slots" },
-                { label: "Blocked Wedding Dates", value: String(bookedDates.length), sub: "Tap dates to toggle" },
-                { label: "Commission Saved", value: "100%", sub: "Direct family leads" },
+                {
+                  label: "Private Customer Leads",
+                  value: String(leads.length),
+                  sub: "With menu & phone",
+                },
+                {
+                  label: "Scheduled Visits / Calls",
+                  value: String(appointments.length),
+                  sub: "Manager calendar",
+                },
+                {
+                  label: "Blocked Wedding Dates",
+                  value: String(bookedDates.length),
+                  sub: "Admin-controlled",
+                },
+                {
+                  label: "Commission Saved",
+                  value: "100%",
+                  sub: "Zero portal fees",
+                },
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className={`rounded-2xl bg-white border ${t.cardBorder} p-5 shadow-sm`}
+                  className="rounded-2xl bg-white border border-amber-200/80 p-5 shadow-sm"
                 >
-                  <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">
-                    {stat.label}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">
+                      {stat.label}
+                    </span>
+                    <Lock className="w-3 h-3 text-amber-600 shrink-0" />
                   </div>
-                  <div className={`font-serif text-3xl font-semibold ${t.headingText} mt-1`}>
+                  <div
+                    className={`font-serif text-3xl font-semibold ${t.headingText} mt-1`}
+                  >
                     {stat.value}
                   </div>
-                  <div className={`text-xs ${t.accentText} mt-0.5`}>{stat.sub}</div>
+                  <div className={`text-xs ${t.accentText} mt-0.5`}>
+                    {stat.sub}
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Interactive Date Availability Manager */}
-            <div className={`rounded-3xl bg-white border ${t.cardBorder} p-6 space-y-4 shadow-sm`}>
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="rounded-3xl bg-white border border-amber-200/90 p-6 space-y-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className={`font-serif text-2xl font-medium ${t.headingText}`}>
-                    1-Tap Wedding Date Availability Control
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                    <Lock className="w-3 h-3" /> Admin Control Only
+                  </div>
+                  <h3
+                    className={`font-serif text-2xl font-medium ${t.headingText}`}
+                  >
+                    1-Tap Wedding Date Blocker
                   </h3>
                   <p className="text-xs text-stone-500">
-                    Tap any date to mark it <strong>Booked</strong> or <strong>Available</strong> — updates the guest planner instantly
+                    Only the owner/admin can toggle dates as{" "}
+                    <strong>Booked</strong> or <strong>Open</strong>—customers
+                    only see availability warnings automatically.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                   <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Available
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />{" "}
+                    Open
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-rose-700 font-medium">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Booked
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />{" "}
+                    Booked
                   </span>
                 </div>
               </div>
@@ -1222,14 +1384,21 @@ export default function BanquetUtilitySuite({
               </div>
             </div>
 
-            {/* Incoming Leads + Scheduled Appointments Split */}
+            {/* Private Customer Leads + Manager Appointments */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Incoming Leads with Full Catering Specs */}
-              <div className={`lg:col-span-7 rounded-3xl bg-white border ${t.cardBorder} p-6 space-y-4 shadow-sm`}>
-                <div className="flex items-center justify-between">
-                  <h3 className={`font-serif text-2xl font-medium ${t.headingText}`}>
-                    Incoming Inquiries & Food Sheets
-                  </h3>
+              {/* Incoming Leads */}
+              <div className="lg:col-span-7 rounded-3xl bg-white border border-amber-200/90 p-6 space-y-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 text-[10px] font-bold uppercase tracking-wider mb-1">
+                      <EyeOff className="w-3 h-3" /> Private Customer Data — Owner Only
+                    </div>
+                    <h3
+                      className={`font-serif text-2xl font-medium ${t.headingText}`}
+                    >
+                      Incoming Inquiries & Food Sheets
+                    </h3>
+                  </div>
                   <span className="text-xs text-stone-400">
                     Tap status pill to update
                   </span>
@@ -1244,7 +1413,9 @@ export default function BanquetUtilitySuite({
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${t.headingText}`}>
+                            <span
+                              className={`text-sm font-bold ${t.headingText}`}
+                            >
                               {lead.name}
                             </span>
                             <span className="text-[11px] font-mono text-stone-400">
@@ -1252,8 +1423,10 @@ export default function BanquetUtilitySuite({
                             </span>
                           </div>
                           <div className="text-xs text-stone-600 mt-0.5">
-                            {lead.eventType} • <strong>{formatReadableDate(lead.eventDate)}</strong> •{" "}
-                            <strong>{lead.guests} Guests</strong> • {lead.rooms} Rooms
+                            {lead.eventType} •{" "}
+                            <strong>{formatReadableDate(lead.eventDate)}</strong>{" "}
+                            • <strong>{lead.guests} Guests</strong> •{" "}
+                            {lead.rooms} Rooms
                           </div>
                         </div>
 
@@ -1275,14 +1448,18 @@ export default function BanquetUtilitySuite({
 
                       <div className="text-xs text-stone-600 space-y-1">
                         <div>
-                          <span className="font-semibold text-stone-700">Food:</span>{" "}
+                          <span className="font-semibold text-stone-700">
+                            Food:
+                          </span>{" "}
                           {lead.menuTier}
                           {lead.counters.length > 0 &&
                             ` (+ ${lead.counters.length} live counters)`}
                         </div>
                         {lead.addOns.length > 0 && (
                           <div>
-                            <span className="font-semibold text-stone-700">Services:</span>{" "}
+                            <span className="font-semibold text-stone-700">
+                              Services:
+                            </span>{" "}
                             {lead.addOns.join(", ")}
                           </div>
                         )}
@@ -1300,7 +1477,9 @@ export default function BanquetUtilitySuite({
                             <Phone className="w-3 h-3" /> Call
                           </a>
                           <a
-                            href={`https://wa.me/91${lead.phone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(
+                            href={`https://wa.me/91${lead.phone
+                              .replace(/\D/g, "")
+                              .slice(-10)}?text=${encodeURIComponent(
                               `Namaste ${lead.name} ji, thank you for inquiring with ${venue.name} for ${formatReadableDate(
                                 lead.eventDate
                               )} (${lead.guests} guests). Let's connect to share our best package.`
@@ -1319,12 +1498,19 @@ export default function BanquetUtilitySuite({
               </div>
 
               {/* Scheduled Site Visits & Callback Queue */}
-              <div className={`lg:col-span-5 rounded-3xl bg-white border ${t.cardBorder} p-6 space-y-4 shadow-sm`}>
-                <div className="flex items-center justify-between">
-                  <h3 className={`font-serif text-2xl font-medium ${t.headingText}`}>
-                    Scheduled Visits & Calls
-                  </h3>
-                  <Calendar className={`w-4 h-4 ${t.accentText}`} />
+              <div className="lg:col-span-5 rounded-3xl bg-white border border-amber-200/90 p-6 space-y-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-950 text-[10px] font-bold uppercase tracking-wider mb-1">
+                      <Lock className="w-3 h-3" /> Manager Schedule Only
+                    </div>
+                    <h3
+                      className={`font-serif text-2xl font-medium ${t.headingText}`}
+                    >
+                      Scheduled Visits & Calls
+                    </h3>
+                  </div>
+                  <Calendar className={`w-4 h-4 ${t.accentText} mt-1`} />
                 </div>
 
                 <div className="space-y-3">
@@ -1355,7 +1541,9 @@ export default function BanquetUtilitySuite({
                       </div>
                       <div className="text-xs text-stone-500 flex items-center justify-between pt-1">
                         <span>{app.visitors}</span>
-                        <span className="font-semibold text-stone-700">{app.phone}</span>
+                        <span className="font-semibold text-stone-700">
+                          {app.phone}
+                        </span>
                       </div>
                     </div>
                   ))}
