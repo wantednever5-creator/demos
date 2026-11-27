@@ -14,6 +14,7 @@ import {
   CreditCard,
   HeartHandshake,
   Lock,
+  MapPin,
   MessageCircle,
   Phone,
   ShieldCheck,
@@ -21,7 +22,9 @@ import {
 } from "lucide-react";
 import {
   DENTAL_CLINIC,
+  DENTAL_MEDIA,
   TREATMENTS,
+  applyDentalFallback,
   buildClinicWhatsAppUrl,
 } from "@/lib/gurukripaData";
 import {
@@ -90,8 +93,14 @@ function BookingContent() {
     () => [
       { label: "Today", iso: getTodayIso() },
       { label: "Tomorrow", iso: getOffsetDateIso(1) },
-      { label: formatClinicDate(getOffsetDateIso(2)).split(",")[0], iso: getOffsetDateIso(2) },
-      { label: formatClinicDate(getOffsetDateIso(3)).split(",")[0], iso: getOffsetDateIso(3) },
+      {
+        label: formatClinicDate(getOffsetDateIso(2)).split(",")[0],
+        iso: getOffsetDateIso(2),
+      },
+      {
+        label: formatClinicDate(getOffsetDateIso(3)).split(",")[0],
+        iso: getOffsetDateIso(3),
+      },
     ],
     []
   );
@@ -110,7 +119,6 @@ function BookingContent() {
     return blocked;
   }, [clinicState, date]);
 
-  // Auto-select first open slot whenever date changes
   useEffect(() => {
     if (slot && !unavailableSlotsForDate.has(slot)) return;
     const firstOpen = CLINIC_TIME_SLOTS.find(
@@ -187,9 +195,13 @@ function BookingContent() {
       `• Patient: ${app.patientName} (Age: ${app.age})`,
       `• Phone: ${app.phone}`,
       `• Treatment: ${app.service}`,
-      `• Priority: ${app.urgency === "Emergency" ? "URGENT EMERGENCY" : "Regular Appointment"}`,
+      `• Priority: ${
+        app.urgency === "Emergency" ? "URGENT EMERGENCY" : "Regular Appointment"
+      }`,
       `• Date & Time: ${formatClinicDate(app.date)} at ${app.slot}`,
-      `• Sedation Option: ${app.sedationRequested ? "Yes, requested" : "Not needed"}`,
+      `• Sedation Option: ${
+        app.sedationRequested ? "Yes, requested" : "Not needed"
+      }`,
       `• Payment Mode: ${app.paymentPreference}`,
       ...(app.notes ? [`• Note: ${app.notes}`] : []),
       ``,
@@ -199,22 +211,55 @@ function BookingContent() {
     window.open(buildClinicWhatsAppUrl(msg), "_blank", "noopener,noreferrer");
   };
 
+  const openSlotCount = CLINIC_TIME_SLOTS.length - unavailableSlotsForDate.size;
+
   return (
-    <div className="bg-[#F4F9FB] text-[#0E2433] pb-20">
-      {/* Header */}
+    <div className="bg-[#F6FAFC] text-[#0B2535] pb-20">
+      {/* Clean Header With 3-Step Guide */}
       <section className="bg-white border-b border-slate-200/80 py-10 sm:py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-          <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] font-bold text-[#0D9488]">
-            <Calendar className="w-3.5 h-3.5" />
-            Appointments Recommended • Zero Waiting
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F6] text-[#0B4F6C] text-xs font-bold">
+              <Calendar className="w-3.5 h-3.5 text-[#0D9488]" />
+              Appointments Recommended • Live Chair Sync
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0B2535]">
+              Book Your Dental Slot
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600">
+              Select a convenient time in 30 seconds. Your token syncs directly
+              to the hospital queue and your personal Patient Portal.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0E2433]">
-            Book Your Dental Appointment
-          </h1>
-          <p className="text-sm sm:text-base text-slate-600 max-w-2xl">
-            Pick an open chair slot in real time. Confirmed tokens sync straight
-            to your Patient Portal and the Doctor's Admin Queue.
-          </p>
+
+          {/* Simple 3-Step Visual Breadcrumb */}
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            {[
+              { step: "1", label: "Visit & Details", active: !confirmed },
+              { step: "2", label: "Pick Live Slot", active: !confirmed },
+              { step: "3", label: "Digital Token", active: Boolean(confirmed) },
+            ].map((s) => (
+              <div
+                key={s.step}
+                className={`px-3.5 py-2 rounded-full border inline-flex items-center gap-2 ${
+                  s.active
+                    ? "bg-[#E6F4F6] border-[#0B4F6C]/30 text-[#0B4F6C]"
+                    : "bg-slate-50 border-slate-200 text-slate-400"
+                }`}
+              >
+                <span
+                  className={`w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center ${
+                    s.active
+                      ? "bg-[#0B4F6C] text-white"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
+                >
+                  {s.step}
+                </span>
+                {s.label}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -224,34 +269,35 @@ function BookingContent() {
           /* DIGITAL TOKEN CONFIRMATION PASS                              */
           /* ============================================================ */
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto rounded-3xl bg-white border-2 border-[#0D9488] p-6 sm:p-10 shadow-xl space-y-6"
+            initial={{ opacity: 0, scale: 0.97, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="max-w-2xl mx-auto rounded-[28px] bg-white border border-teal-200 p-6 sm:p-10 shadow-[0_24px_60px_-20px_rgba(13,148,136,0.2)] space-y-6"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-teal-50 text-[#0D9488] text-xs font-bold">
                 <CheckCircle2 className="w-4 h-4" />
-                Appointment Token Generated
+                Appointment Confirmed
               </span>
-              <span className="font-mono text-sm font-bold px-3 py-1 rounded-full bg-[#0B4F6C] text-white">
+              <span className="font-mono text-sm font-bold px-3.5 py-1.5 rounded-full bg-[#0B4F6C] text-white shadow-xs">
                 Token #{confirmed.id}
               </span>
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#0E2433]">
-                We're Ready for You, {confirmed.patientName}.
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2535]">
+                You're All Set, {confirmed.patientName}.
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Your booking is now live in both the Patient Portal and the
-                Doctor's Admin Dashboard.
+                Your slot is now visible in your Patient Portal and the
+                hospital's live Doctor Queue.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-[#F4F9FB] border border-slate-200/80 p-5 space-y-3 text-sm">
+            <div className="rounded-2xl bg-[#F6FAFC] border border-slate-200/80 p-5 space-y-3 text-sm">
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500">Date & Slot</span>
-                <span className="font-bold text-[#0E2433] text-right">
+                <span className="font-bold text-[#0B2535] text-right">
                   {formatClinicDate(confirmed.date)} • {confirmed.slot}
                 </span>
               </div>
@@ -262,7 +308,7 @@ function BookingContent() {
                 </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-slate-500">Priority & Bay</span>
+                <span className="text-slate-500">Assigned Bay</span>
                 <span
                   className={`font-bold ${
                     confirmed.urgency === "Emergency"
@@ -275,7 +321,7 @@ function BookingContent() {
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500">Payment Mode</span>
-                <span className="font-semibold text-[#0E2433]">
+                <span className="font-semibold text-[#0B2535]">
                   {confirmed.paymentPreference}
                 </span>
               </div>
@@ -291,30 +337,30 @@ function BookingContent() {
               <button
                 type="button"
                 onClick={() => handleSendWhatsAppPass(confirmed)}
-                className="py-3.5 px-5 rounded-full bg-[#25D366] hover:bg-[#2CE070] text-[#081C10] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                className="py-3.5 px-5 rounded-full bg-[#25D366] hover:bg-[#2CE06E] text-[#081C10] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
               >
                 <MessageCircle className="w-4 h-4" />
-                Confirm via WhatsApp
+                Send Pass on WhatsApp
               </button>
 
               <Link
                 href={`/gurukripa-dental/portal?token=${encodeURIComponent(
                   confirmed.id
                 )}`}
-                className="py-3.5 px-5 rounded-full bg-[#0B4F6C] hover:bg-[#083C52] text-white text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors"
+                className="py-3.5 px-5 rounded-full bg-[#0B4F6C] hover:bg-[#083C52] text-white text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors shadow-xs"
               >
                 <User className="w-4 h-4" />
                 Open in Patient Portal
               </Link>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
               <Link
                 href="/gurukripa-dental/admin"
                 className="inline-flex items-center gap-1.5 font-bold text-amber-800 hover:underline"
               >
                 <Lock className="w-3.5 h-3.5" />
-                Preview This Booking in Doctor Admin Panel →
+                View Live in Doctor Admin Panel →
               </Link>
 
               <button
@@ -332,67 +378,78 @@ function BookingContent() {
           </motion.div>
         ) : (
           /* ============================================================ */
-          /* BOOKING FORM + LIVE SLOT PICKER                              */
+          /* BOOKING FORM + LIVE SUMMARY SIDEBAR                          */
           /* ============================================================ */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <form
               onSubmit={handleSubmit}
-              className="lg:col-span-8 rounded-3xl bg-white border border-slate-200/90 p-6 sm:p-8 space-y-6 shadow-sm"
+              className="lg:col-span-8 rounded-[28px] bg-white border border-slate-200/90 p-6 sm:p-8 space-y-6 shadow-xs"
             >
-              {/* Urgency Selector */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setUrgency("Normal")}
-                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
-                    urgency === "Normal"
-                      ? "bg-[#E6F4F6] border-[#0B4F6C] shadow-xs"
-                      : "bg-[#F8FBFD] border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <Calendar
-                    className={`w-5 h-5 mt-0.5 ${
-                      urgency === "Normal" ? "text-[#0B4F6C]" : "text-slate-400"
+              {/* Urgency Toggle */}
+              <div className="space-y-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Step 1 — Visit Priority & Patient Info
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setUrgency("Normal")}
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+                      urgency === "Normal"
+                        ? "bg-[#EBF6F8] border-[#0B4F6C] shadow-xs"
+                        : "bg-[#F8FBFD] border-slate-200 hover:border-slate-300"
                     }`}
-                  />
-                  <div>
-                    <div className="text-sm font-bold text-[#0E2433]">
-                      Regular Consultation
+                  >
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        urgency === "Normal"
+                          ? "bg-[#0B4F6C] text-white"
+                          : "bg-white text-slate-400 border border-slate-200"
+                      }`}
+                    >
+                      <Calendar className="w-4 h-4" />
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Checkup, cosmetic, pediatric or planned care
+                    <div>
+                      <div className="text-sm font-bold text-[#0B2535]">
+                        Regular Consultation
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Checkup, cosmetic, pediatric or planned care
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => setUrgency("Emergency")}
-                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
-                    urgency === "Emergency"
-                      ? "bg-rose-50 border-rose-500 shadow-xs"
-                      : "bg-[#F8FBFD] border-slate-200 hover:border-rose-300"
-                  }`}
-                >
-                  <AlertCircle
-                    className={`w-5 h-5 mt-0.5 ${
+                  <button
+                    type="button"
+                    onClick={() => setUrgency("Emergency")}
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
                       urgency === "Emergency"
-                        ? "text-rose-600"
-                        : "text-slate-400"
+                        ? "bg-rose-50 border-rose-500 shadow-xs"
+                        : "bg-[#F8FBFD] border-slate-200 hover:border-rose-300"
                     }`}
-                  />
-                  <div>
-                    <div className="text-sm font-bold text-rose-700">
-                      Urgent Dental Emergency
+                  >
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        urgency === "Emergency"
+                          ? "bg-rose-600 text-white"
+                          : "bg-white text-slate-400 border border-slate-200"
+                      }`}
+                    >
+                      <AlertCircle className="w-4 h-4" />
                     </div>
-                    <div className="text-xs text-rose-600/80 mt-0.5">
-                      Severe pain, swelling, trauma or broken tooth
+                    <div>
+                      <div className="text-sm font-bold text-rose-700">
+                        Urgent Dental Emergency
+                      </div>
+                      <div className="text-xs text-rose-600/80 mt-0.5">
+                        Severe pain, swelling, trauma or broken tooth
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               </div>
 
-              {/* Patient Details */}
+              {/* Patient Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                 <div className="sm:col-span-5">
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
@@ -404,7 +461,7 @@ function BookingContent() {
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
                     placeholder="e.g. Rohan Tiwari"
-                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none"
+                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors"
                   />
                 </div>
 
@@ -418,7 +475,7 @@ function BookingContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none"
+                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors"
                   />
                 </div>
 
@@ -431,12 +488,12 @@ function BookingContent() {
                     value={age}
                     onChange={(e) => setAge(e.target.value.slice(0, 3))}
                     placeholder="28"
-                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-3.5 py-3 text-sm focus:outline-none"
+                    className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-3.5 py-3 text-sm focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
-              {/* Service Picker */}
+              {/* Service Selector */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Treatment / Reason for Visit
@@ -444,7 +501,7 @@ function BookingContent() {
                 <select
                   value={service}
                   onChange={(e) => setService(e.target.value)}
-                  className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm font-medium text-[#0E2433] focus:outline-none cursor-pointer"
+                  className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm font-medium text-[#0B2535] focus:outline-none cursor-pointer transition-colors"
                 >
                   {TREATMENTS.map((t) => (
                     <option key={t.id} value={t.name}>
@@ -457,78 +514,79 @@ function BookingContent() {
                 </select>
               </div>
 
-              {/* Date Picker + Quick Dates */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-xs font-semibold text-slate-600">
-                    Choose Preferred Date
-                  </label>
+              {/* Date & Live Slot Picker */}
+              <div className="pt-2 border-t border-slate-100 space-y-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Step 2 — Pick Date & Live Chair Slot
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap gap-1.5">
                     {quickDates.map((qd) => (
                       <button
                         key={qd.iso}
                         type="button"
                         onClick={() => setDate(qd.iso)}
-                        className={`px-3 py-1 rounded-full text-[11px] font-semibold border cursor-pointer transition-colors ${
+                        className={`px-3.5 py-2 rounded-full text-xs font-semibold border cursor-pointer transition-all ${
                           date === qd.iso
-                            ? "bg-[#0B4F6C] text-white border-[#0B4F6C]"
-                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-[#0B4F6C]"
+                            ? "bg-[#0B4F6C] text-white border-[#0B4F6C] shadow-xs"
+                            : "bg-[#F8FBFD] text-slate-600 border-slate-200 hover:border-[#0B4F6C]"
                         }`}
                       >
                         {qd.label}
                       </button>
                     ))}
                   </div>
+
+                  <input
+                    type="date"
+                    min={getTodayIso()}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none [color-scheme:light]"
+                  />
                 </div>
 
-                <input
-                  type="date"
-                  min={getTodayIso()}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full sm:w-64 bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] rounded-xl px-4 py-2.5 text-sm focus:outline-none [color-scheme:light]"
-                />
+                <div className="space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-600 inline-flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[#0D9488]" />
+                      {openSlotCount} open slots for {formatClinicDate(date)}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Crossed-out slots are booked or blocked by doctor
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {CLINIC_TIME_SLOTS.map((time) => {
+                      const taken = unavailableSlotsForDate.has(time);
+                      const active = slot === time && !taken;
+                      return (
+                        <motion.button
+                          whileTap={taken ? undefined : { scale: 0.96 }}
+                          key={time}
+                          type="button"
+                          disabled={taken}
+                          onClick={() => setSlot(time)}
+                          className={`py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all ${
+                            taken
+                              ? "bg-slate-100 text-slate-400 border-slate-200 line-through cursor-not-allowed"
+                              : active
+                              ? "bg-[#0B4F6C] text-white border-[#0B4F6C] shadow-sm cursor-pointer"
+                              : "bg-[#F8FBFD] text-slate-700 border-slate-200 hover:border-[#0D9488] hover:bg-white cursor-pointer"
+                          }`}
+                        >
+                          {time}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              {/* Live Time Slot Grid (Syncs With Doctor Admin Blocker) */}
-              <div className="space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-xs font-semibold text-slate-600 inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#0D9488]" />
-                    Available Time Slots ({formatClinicDate(date)})
-                  </label>
-                  <span className="text-[11px] text-slate-400">
-                    Greyed slots are booked or blocked by doctor
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {CLINIC_TIME_SLOTS.map((time) => {
-                    const taken = unavailableSlotsForDate.has(time);
-                    const active = slot === time && !taken;
-                    return (
-                      <button
-                        key={time}
-                        type="button"
-                        disabled={taken}
-                        onClick={() => setSlot(time)}
-                        className={`py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all ${
-                          taken
-                            ? "bg-slate-100 text-slate-400 border-slate-200 line-through cursor-not-allowed"
-                            : active
-                            ? "bg-[#0B4F6C] text-white border-[#0B4F6C] shadow-xs cursor-pointer"
-                            : "bg-[#F8FBFD] text-slate-700 border-slate-200 hover:border-[#0D9488] cursor-pointer"
-                        }`}
-                      >
-                        {time}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Sedation Comfort Checkbox */}
-              <label className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 cursor-pointer">
+              {/* Sedation Comfort Option */}
+              <label className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-50/55 border border-indigo-100 hover:border-indigo-200 cursor-pointer transition-colors">
                 <input
                   type="checkbox"
                   checked={sedationRequested}
@@ -541,8 +599,8 @@ function BookingContent() {
                     Request Sedation / Anxiety-Free Comfort Option
                   </div>
                   <p className="text-xs text-indigo-900/70 mt-0.5">
-                    Let the dentist know in advance if you feel anxious about
-                    dental procedures or needles.
+                    Alerts our doctor in advance so your sitting is tailored for
+                    zero anxiety.
                   </p>
                 </div>
               </label>
@@ -551,7 +609,7 @@ function BookingContent() {
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-600 inline-flex items-center gap-1.5">
                   <CreditCard className="w-3.5 h-3.5 text-[#0D9488]" />
-                  Preferred Payment Mode at Clinic
+                  Preferred Payment Mode at Reception
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {PAYMENT_OPTIONS.map((opt) => (
@@ -581,8 +639,8 @@ function BookingContent() {
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Describe pain area, sensitivity, child's age, or preferred follow-up..."
-                  className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none resize-none"
+                  placeholder="Describe pain location, sensitivity, child's age, or preferred follow-up..."
+                  className="w-full bg-[#F8FBFD] border border-slate-200 focus:border-[#0B4F6C] focus:bg-white rounded-xl px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
                 />
               </div>
 
@@ -607,52 +665,99 @@ function BookingContent() {
               </button>
             </form>
 
-            {/* Right Info Sidebar */}
-            <div className="lg:col-span-4 space-y-5">
-              <div className="rounded-3xl bg-white border border-slate-200/90 p-6 space-y-4 shadow-xs">
-                <div className="text-xs uppercase tracking-[0.18em] font-bold text-[#0D9488]">
-                  Visit Information
-                </div>
-                <h2 className="text-xl font-bold text-[#0E2433]">
-                  {DENTAL_CLINIC.name}
-                </h2>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {DENTAL_CLINIC.address}
-                </p>
-
-                <div className="space-y-2.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <Car className="w-4 h-4 text-[#0D9488] shrink-0" />
-                    Free Parking Lot, On-Site & Street Parking
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-[#0B4F6C] shrink-0" />
-                    Google Pay, NFC Tap-to-Pay & EMI Plans
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#0D9488] shrink-0" />
-                    On-Site Clinical & Emergency Services
+            {/* Right Live Summary & Hospital Preview Card */}
+            <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-24">
+              <div className="rounded-[28px] bg-white border border-slate-200/90 overflow-hidden shadow-sm">
+                <div className="relative h-36 bg-slate-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={DENTAL_MEDIA.clinicInterior}
+                    alt="Gurukripa Dental Hospital interior"
+                    onError={(e) =>
+                      applyDentalFallback(e, DENTAL_MEDIA.heroFallback)
+                    }
+                    className="w-full h-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#082E40]/80 via-[#082E40]/20 to-transparent" />
+                  <div className="absolute bottom-3 left-4 right-4 text-white">
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-teal-300">
+                      Live Booking Summary
+                    </div>
+                    <div className="text-sm font-bold">
+                      {DENTAL_CLINIC.name}
+                    </div>
                   </div>
                 </div>
 
-                <a
-                  href={DENTAL_CLINIC.telHref}
-                  className="w-full py-3 rounded-full bg-[#F4F9FB] border border-slate-200 hover:border-[#0B4F6C] text-xs font-bold text-[#0B4F6C] flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  Need Immediate Help? {DENTAL_CLINIC.phoneDisplay}
-                </a>
+                <div className="p-6 space-y-4">
+                  <div className="space-y-2.5 text-xs sm:text-sm">
+                    <div className="flex justify-between gap-2 py-1.5 border-b border-slate-100">
+                      <span className="text-slate-500">Priority</span>
+                      <span
+                        className={`font-bold ${
+                          urgency === "Emergency"
+                            ? "text-rose-600"
+                            : "text-[#0D9488]"
+                        }`}
+                      >
+                        {urgency === "Emergency"
+                          ? "Urgent Emergency"
+                          : "Standard Visit"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-2 py-1.5 border-b border-slate-100">
+                      <span className="text-slate-500">Date & Slot</span>
+                      <span className="font-bold text-[#0B2535] text-right">
+                        {formatClinicDate(date).split(",")[0]} •{" "}
+                        {slot || "Pick slot"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-2 py-1.5 border-b border-slate-100">
+                      <span className="text-slate-500">Payment</span>
+                      <span className="font-semibold text-[#0B4F6C] text-right">
+                        {paymentPreference}
+                      </span>
+                    </div>
+                    {sedationRequested && (
+                      <div className="rounded-xl bg-indigo-50 text-indigo-800 px-3 py-2 text-xs font-semibold">
+                        Sedation comfort option flagged for doctor
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pt-2 text-xs text-slate-600">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#0D9488] shrink-0 mt-0.5" />
+                      <span>{DENTAL_CLINIC.shortAddress}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Car className="w-3.5 h-3.5 text-[#0B4F6C] shrink-0" />
+                      <span>Free On-Site & Lot Parking</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
+                      <span>Instant Digital Token + WhatsApp Pass</span>
+                    </div>
+                  </div>
+
+                  <a
+                    href={DENTAL_CLINIC.telHref}
+                    className="w-full py-2.5 rounded-full bg-[#F6FAFC] border border-slate-200 hover:border-[#0B4F6C] text-xs font-bold text-[#0B4F6C] flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call Reception: {DENTAL_CLINIC.phoneDisplay}
+                  </a>
+                </div>
               </div>
 
-              <div className="rounded-3xl bg-amber-50 border border-amber-200 p-6 space-y-2.5">
+              <div className="rounded-2xl bg-amber-50/90 border border-amber-200 p-5 space-y-1.5">
                 <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-extrabold text-amber-900">
-                  <Lock className="w-3.5 h-3.5" /> Live Demo Sync Tip
+                  <Lock className="w-3.5 h-3.5" /> Live Hospital Sync
                 </div>
                 <p className="text-xs text-amber-950/80 leading-relaxed">
-                  Submit a test booking here, then open{" "}
-                  <strong>Doctor / Admin</strong> in the top bar—you'll see
-                  your appointment appear immediately in the clinic queue with
-                  1-click WhatsApp reminders and chair controls.
+                  Book a test slot here, then check{" "}
+                  <strong>Doctor Admin</strong> in the navbar—it lands in the
+                  live queue instantly.
                 </p>
               </div>
             </div>

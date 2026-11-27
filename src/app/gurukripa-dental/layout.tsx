@@ -33,14 +33,14 @@ export default function GurukripaLayout({
 }) {
   return (
     <div
-      className={`${instrumentSerif.variable} ${jakarta.variable} [--font-serif:var(--font-gk-serif)] [--font-sans:var(--font-gk-sans)] min-h-screen flex flex-col bg-[#F4F9FB] text-[#0E2433] font-sans antialiased selection:bg-[#0B4F6C] selection:text-white`}
+      className={`${instrumentSerif.variable} ${jakarta.variable} [--font-serif:var(--font-gk-serif)] [--font-sans:var(--font-gk-sans)] min-h-screen flex flex-col bg-[#F6FAFC] text-[#0B2535] font-sans antialiased selection:bg-[#0B4F6C] selection:text-white`}
     >
       <Navbar />
-      <main className="flex-1 pt-[104px] sm:pt-[108px]">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
 
       {/* Mobile Sticky Clinic Action Bar */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 grid grid-cols-2 gap-3 shadow-[0_-8px_30px_rgba(11,79,108,0.1)]">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-4 py-3 grid grid-cols-2 gap-3 shadow-[0_-10px_30px_rgba(11,79,108,0.1)]">
         <a
           href={DENTAL_CLINIC.telHref}
           className="py-2.5 rounded-full border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5"
@@ -50,7 +50,7 @@ export default function GurukripaLayout({
         </a>
         <Link
           href="/gurukripa-dental/book"
-          className="py-2.5 rounded-full bg-[#0B4F6C] text-white text-xs font-semibold flex items-center justify-center gap-1.5"
+          className="py-2.5 rounded-full bg-[#0B4F6C] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm"
         >
           <Calendar className="w-3.5 h-3.5" />
           Book Slot

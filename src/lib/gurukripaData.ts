@@ -42,11 +42,146 @@ export const DENTAL_MEDIA = {
     "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=80",
   clinicInterior:
     "https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1200&q=80",
+  consultationImage:
+    "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=1200&q=80",
 } as const;
+
+export interface ClinicGalleryPhoto {
+  id: string;
+  title: string;
+  tag: "Operatory" | "Cosmetic Suite" | "Pediatric & Comfort" | "Sterilization";
+  caption: string;
+  image: string;
+  fallback: string;
+}
+
+export const CLINIC_GALLERY: ClinicGalleryPhoto[] = [
+  {
+    id: "cg-1",
+    title: "Modern Multi-Chair Dental Operatory",
+    tag: "Operatory",
+    caption:
+      "Ergonomic dental suites designed for precision rotary root canals, implants, and comfortable sittings.",
+    image:
+      "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=85",
+    fallback: DENTAL_MEDIA.heroFallback,
+  },
+  {
+    id: "cg-2",
+    title: "Digital Smile & Cosmetic Consultation",
+    tag: "Cosmetic Suite",
+    caption:
+      "Shade-matched porcelain veneers, laser whitening, and clear treatment walkthroughs before you begin.",
+    image:
+      "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1200&q=85",
+    fallback: DENTAL_MEDIA.heroFallback,
+  },
+  {
+    id: "cg-3",
+    title: "Calm Pediatric & Sedation Care Bay",
+    tag: "Pediatric & Comfort",
+    caption:
+      "Fear-free care protocols tailored for children and patients with dental anxiety.",
+    image:
+      "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=85",
+    fallback: DENTAL_MEDIA.heroImage,
+  },
+  {
+    id: "cg-4",
+    title: "Strict Hospital-Grade Sterilization",
+    tag: "Sterilization",
+    caption:
+      "Sealed instruments, sanitized surfaces between every patient, and clean clinical airflow.",
+    image:
+      "https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1200&q=85",
+    fallback: DENTAL_MEDIA.heroImage,
+  },
+];
+
+export interface SymptomOption {
+  id: string;
+  label: string;
+  shortHint: string;
+  urgency: "Normal" | "Emergency";
+  recommendedService: string;
+  sittingTime: string;
+  comfortNote: string;
+  advice: string;
+}
+
+export const SYMPTOM_MATCHER: SymptomOption[] = [
+  {
+    id: "toothache",
+    label: "Sharp Toothache or Swelling",
+    shortHint: "Pain when chewing, hot/cold sensitivity, or swollen gums",
+    urgency: "Emergency",
+    recommendedService: "Same-Day Emergency Toothache & Root Canal",
+    sittingTime: "45–60 Mins (Priority Slot)",
+    comfortNote: "Rapid pain relief + sedation available if anxious",
+    advice:
+      "Do not place aspirin directly on the gum. Rinse gently with warm salt water and reserve a priority emergency slot so our dentist can relieve pressure the same day.",
+  },
+  {
+    id: "cosmetic",
+    label: "Stained, Gapped or Uneven Smile",
+    shortHint: "Want brighter teeth, veneers, or natural smile alignment",
+    urgency: "Normal",
+    recommendedService: "Digital Smile Makeover & Veneers",
+    sittingTime: "45 Mins Consultation",
+    comfortNote: "Flexible 3 to 12-month EMI plans available",
+    advice:
+      "Start with a digital shade and smile evaluation. We map out minimally invasive whitening, bonding, or porcelain veneers with clear staged costs upfront.",
+  },
+  {
+    id: "kids",
+    label: "Child's Tooth Decay or Checkup",
+    shortHint: "Cavity protection, milk teeth care, or early braces check",
+    urgency: "Normal",
+    recommendedService: "Gentle Kids Dentistry & Cavity Shield",
+    sittingTime: "30 Mins (Fear-Free)",
+    comfortNote: "Child-friendly tell-show-do approach",
+    advice:
+      "Early gentle visits prevent lifelong dental fear. Painless pit-and-fissure sealants and fluoride shields protect growing molars in a single short sitting.",
+  },
+  {
+    id: "anxiety",
+    label: "Dental Fear or Multiple Pending Treatments",
+    shortHint: "Nervous about needles, drills, or long procedures",
+    urgency: "Normal",
+    recommendedService: "Sedation Dentistry for Dental Anxiety",
+    sittingTime: "Custom Relaxed Sitting",
+    comfortNote: "Monitored conscious sedation for zero-stress care",
+    advice:
+      "Let us know beforehand—our sedation dentistry protocols let you relax calmly while completing root canals, extractions, or implants comfortably.",
+  },
+];
+
+export const CLINIC_FAQS = [
+  {
+    q: "Do I need an appointment or can I walk in for an emergency?",
+    a: "Appointments are recommended so you experience zero waiting time. However, we reserve priority same-day Emergency Bay slots for severe toothaches, swelling, or broken teeth—call 08057569600 or book an Urgent Emergency token online.",
+  },
+  {
+    q: "Is parking easily available near the hospital?",
+    a: "Yes. Gurukripa Dental Hospital is located in the Basement of Planet Fashion opposite Vishal Mega Mart on Bareilly–Nainital Road with a free parking lot, dedicated on-site parking, and free street parking.",
+  },
+  {
+    q: "What payment modes and EMI plans do you accept?",
+    a: "We accept Google Pay, contactless NFC mobile tap-to-pay, cash/cards, and flexible monthly payment plans (EMI) for cosmetic veneers, braces, implants, and larger procedures.",
+  },
+  {
+    q: "I am terrified of dental pain—is sedation dentistry safe?",
+    a: "Yes. Our monitored sedation protocols are specifically tailored for anxious adults and sensitive procedures, keeping you relaxed and pain-free from start to finish.",
+  },
+] as const;
 
 export interface TreatmentItem {
   id: string;
-  category: "Cosmetic Dentistry" | "Emergency Care" | "Pediatric Care" | "Sedation & Pain-Free";
+  category:
+    | "Cosmetic Dentistry"
+    | "Emergency Care"
+    | "Pediatric Care"
+    | "Sedation & Pain-Free";
   name: string;
   duration: string;
   comfortTag: string;
@@ -224,22 +359,22 @@ export const HOSPITAL_ROI_POINTS = [
   {
     title: "Cuts Front-Desk Call Chaos by 60%",
     detail:
-      "Patients pick their own open slot online instead of calling repeatedly to ask timings, parking, or Google Pay availability.",
+      "Patients pick open slots online and check parking, Google Pay, and FAQs themselves instead of crowding reception phone lines.",
   },
   {
-    title: "Separates Urgent Toothaches from Routine Visits",
+    title: "Separates Urgent Pain From Routine Visits",
     detail:
-      "Emergency cases trigger a high-priority red badge in the Doctor Dashboard so urgent pain patients are triaged immediately.",
+      "Emergency toothaches trigger an immediate red triage alert in the Doctor Command Center so critical cases are prioritized fast.",
   },
   {
-    title: "Converts High-Value Cosmetic & Implant Leads",
+    title: "Converts Cosmetic & Implant Inquiries",
     detail:
-      "Built-in EMI Payment Plan Estimator helps patients commit to braces, veneers, and implants instead of hesitating over upfront cost.",
+      "Built-in EMI Payment Plan Estimator helps patients visualize affordable monthly splits for veneers, braces, and implants.",
   },
   {
-    title: "Slashes No-Shows With 1-Click WhatsApp Reminders",
+    title: "Slashes No-Shows With 1-Tap Reminders",
     detail:
-      "Reception sends pre-filled appointment reminders & directions to Bhotia Parao in a single tap from the Admin Panel.",
+      "Staff send formatted WhatsApp reminders with Bhotia Parao Google Map directions straight from the private Doctor Panel.",
   },
 ] as const;
 
